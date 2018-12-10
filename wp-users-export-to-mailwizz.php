@@ -1,7 +1,6 @@
 <?php defined( 'ABSPATH' ) or die( 'No direct script access allowed!' );
 /*
 Plugin Name: Users export to MailWizz
-Plugin URI: http://www.mailwizz.com
 Description: Adds an export users entry under Tools menu for your <a href="http://www.mailwizz.com/" target="_blank">MailWizz Email Marketing Application</a> based on the <a href="https://github.com/twisted1919/mailwizz-php-sdk" target="_blank">PHP-SDK</a>. <br />Using the widget, you can export a users list based on your mail list definition.
 Version: 1.0
 Author: Serban Cristian <cristian.serban@mailwizz.com>
