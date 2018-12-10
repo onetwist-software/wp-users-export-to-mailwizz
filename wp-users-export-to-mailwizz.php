@@ -134,8 +134,8 @@ function uetm_tools_page() {
     $mailwizz_api_opt_name = 'uetm_api_opt';
 
     // Read in existing option value from database
-    $option_value          = get_option( $mailwizz_api_opt_name );
-    $mailwizz_api_opt_val  = ! empty( $option_value ) ? $option_value : array();
+    $option_value          = get_option( $mailwizz_api_opt_name, array() );
+    $mailwizz_api_opt_val  = ! empty( $option_value ) ? (array)$option_value : array();
     
     $api_url               = isset( $mailwizz_api_opt_val['api_url'] )     ? $mailwizz_api_opt_val['api_url']     : '';
     $public_key            = isset( $mailwizz_api_opt_val['public_key'] )  ? $mailwizz_api_opt_val['public_key']  : '';
@@ -192,7 +192,6 @@ function uetm_tools_page() {
         if ( $errors = uetm_validate_attributes( $nonce, $api_url, $public_key, $private_key ) ) {
             Uetm_Notice_Store::add( new Uetm_Notice( $errors, 'notice-error' ) );
         } else {
-            
             // If no error export to mailwizz list
             uetm_export_to_mwz( $api_url, $public_key, $private_key, $list_uid, $roles );
         }
