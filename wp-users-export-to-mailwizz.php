@@ -12,7 +12,6 @@ License: MIT http://opensource.org/licenses/MIT
 define( 'UETM_TEXTDOMAIN', 'uetm' );
 
 if ( ! class_exists( 'MailWizzApi_Autoloader', false ) ) {
-    // register the sdk autoloader.
     require_once dirname(__FILE__) . '/vendor/autoload.php';
 }
 
@@ -30,7 +29,7 @@ class Uetm_Notice
     /**
      * CSS classes to apply on the notice div
      */
-    public $css_classes = array('notice');
+    public $css_classes = array( 'notice' );
 
     /**
      * Uetm_Notice constructor.
@@ -43,11 +42,10 @@ class Uetm_Notice
             return;
         }
 
-        $this->message = $message;
-
-        if ( is_array( $message ) ) {
-            $this->message = implode( PHP_EOL, $message );
+        if ( ! is_array( $message ) ) {
+	        $message = array( $message );
         }
+	    $this->message = $message;
 
         if ( ! empty( $css_classes ) ) {
             if ( ! is_array( $css_classes ) ) {
@@ -100,8 +98,10 @@ class Uetm_Notice_Store
     {
         foreach ( static::get() as $notice ) {
             ?>
-            <div style="margin-left:0px" class="<?php echo implode( ' ', $notice->css_classes ); ?>">
-                <p><?php echo esc_html( $notice->message ); ?></p>
+            <div style="margin-left:0px" class="<?php echo esc_attr( implode( ' ', $notice->css_classes ) ); ?>">
+                <?php foreach ((array)$notice->message as $message) { 
+                    echo sprintf( '<p> %s </p>', esc_html( $message ) );
+                } ?>
             </div>
             <?php
         }
@@ -115,7 +115,7 @@ add_action( 'admin_menu', 'uetm_add_pages' );
 function uetm_add_pages() {
 
     // Add a new submenu under Tools:
-    add_management_page( __( 'Export users to Mailwizz', UETM_TEXTDOMAIN ), __( 'Export users to Mailwizz',UETM_TEXTDOMAIN ), 'manage_options', 'users2mlwztools', 'uetm_tools_page' );
+    add_management_page( __( 'Export users to Mailwizz', UETM_TEXTDOMAIN ), __( 'Export users to Mailwizz',UETM_TEXTDOMAIN ), 'manage_options', 'users-to-mailwizz', 'uetm_tools_page' );
 }
 
 // uetm_tools_page() displays the page content for the Users export to Mailwizz
@@ -135,8 +135,8 @@ function uetm_tools_page() {
 
     // Read in existing option value from database
     $option_value          = get_option( $mailwizz_api_opt_name );
-    $mailwizz_api_opt_val  = ! empty( $option_value ) ? @unserialize( $option_value ) : '';
-
+    $mailwizz_api_opt_val  = ! empty( $option_value ) ? json_decode( $option_value, true ) : '';
+    
     $api_url               = isset( $mailwizz_api_opt_val['api_url'] )     ? $mailwizz_api_opt_val['api_url']     : '';
     $public_key            = isset( $mailwizz_api_opt_val['public_key'] )  ? $mailwizz_api_opt_val['public_key']  : '';
     $private_key           = isset( $mailwizz_api_opt_val['private_key'] ) ? $mailwizz_api_opt_val['private_key'] : '';
@@ -176,8 +176,8 @@ function uetm_tools_page() {
             Uetm_Notice_Store::add( new Uetm_Notice( $errors, ['error'] ) );
         } else {
             // If no errors save the posted value in the database
-            update_option( $mailwizz_api_opt_name, serialize( $opt_val ) );
-            Uetm_Notice_Store::add( new Uetm_Notice( __( 'API credentials saved successfully.', UETM_TEXTDOMAIN ), ['notice-success'] ) );
+            update_option( $mailwizz_api_opt_name, json_encode( $opt_val ) );
+            Uetm_Notice_Store::add( new Uetm_Notice( __( 'API credentials saved successfully.', UETM_TEXTDOMAIN ), 'notice-success' ) );
         }
         unset( $_POST['save_api'] );
         unset( $_POST['uetm_form_nonce'] );
@@ -186,11 +186,11 @@ function uetm_tools_page() {
     if ( isset( $_POST['export'] ) ) {
 
         $nonce    = isset( $_POST['uetm_form_nonce'] ) ?  sanitize_text_field( $_POST['uetm_form_nonce'] ) : '';
-        $list_uid = isset( $_POST['lists'] )           ?  sanitize_text_field( $_POST['lists'] )          : '';
+        $list_uid = isset( $_POST['lists'] )           ?  sanitize_text_field( $_POST['lists'] )           : '';
         $roles    = isset( $_POST['roles'] )           ?  array_map( function( $item ) { return sanitize_text_field( $item ); }, $_POST['roles'] ) : '';
 
         if ( $errors = uetm_validate_attributes( $nonce, $api_url, $public_key, $private_key ) ) {
-            Uetm_Notice_Store::add( new Uetm_Notice( $errors, ['error'] ) );
+            Uetm_Notice_Store::add( new Uetm_Notice( $errors, 'notice-error' ) );
         } else {
             // If no error export to mailwizz list
             uetm_export_to_mwz( $api_url, $public_key, $private_key, $list_uid, $roles );
@@ -219,7 +219,7 @@ function uetm_tools_page() {
                     <label for="public_key"><?php _e("Public key (required)", UETM_TEXTDOMAIN ); ?></label>
                 </th>
                 <td>
-                    <input type="text" name="public_key" value="<?php echo esc_attr( $public_key ); ?>" size="40" required>
+                    <input type="text" name="public_key" value="<?php echo esc_attr( $public_key ); ?>" size="100" required>
                 </td>
             </tr>
             <tr>
@@ -227,7 +227,7 @@ function uetm_tools_page() {
                     <label for="public_key"><?php _e("Private key (required)", UETM_TEXTDOMAIN ); ?></label>
                 </th>
                 <td>
-                    <input type="text" name="private_key" value="<?php echo esc_attr( $private_key ); ?>" size="40" required>
+                    <input type="text" name="private_key" value="<?php echo esc_attr( $private_key ); ?>" size="100" required>
                 </td>
             </tr>
             </tbody>
@@ -336,12 +336,12 @@ function uetm_build_sdk_config( $api_url, $public_key, $private_key ) {
 function uetm_export_to_mwz( $api_url, $public_key, $private_key, $list_uid, $roles) {
 
     if ( ! $list_uid) {
-        Uetm_Notice_Store::add( new Uetm_Notice( __( 'Please select a list where to export the data', UETM_TEXTDOMAIN ), ['notice-warning'] ) );
+        Uetm_Notice_Store::add( new Uetm_Notice( __( 'Please select a list where to export the data', UETM_TEXTDOMAIN ), 'notice-warning' ) );
         return;
     }
 
     if ( ! $roles ) {
-        Uetm_Notice_Store::add( new Uetm_Notice( __( 'No role selected, we will be exporting all', UETM_TEXTDOMAIN ), ['notice-warning'] ) );
+        Uetm_Notice_Store::add( new Uetm_Notice( __( 'No role selected, we will be exporting all', UETM_TEXTDOMAIN ), 'notice-warning' ) );
         $roles = null;
     }
 
@@ -350,11 +350,11 @@ function uetm_export_to_mwz( $api_url, $public_key, $private_key, $list_uid, $ro
     $endpoint = new MailWizzApi_Endpoint_ListSubscribers();
 
     $users = get_users( array(
-        'role'   => $roles,
+        'role__in'   => $roles,
     ) );
 
     if ( ! $users ) {
-        Uetm_Notice_Store::add( new Uetm_Notice( __( 'No users found for your selection', UETM_TEXTDOMAIN ), ['error'] ) );
+        Uetm_Notice_Store::add( new Uetm_Notice( __( 'No users found for your selection', UETM_TEXTDOMAIN ), 'notice-error' ) );
         return;
     }
 
@@ -364,7 +364,7 @@ function uetm_export_to_mwz( $api_url, $public_key, $private_key, $list_uid, $ro
 
     foreach ($users as $user) {
         $response = $endpoint->create( $list_uid, array(
-            'EMAIL' => $user->user_email, // the confirmation email will be sent!!! Use valid email address
+            'EMAIL' => $user->user_email,
             'FNAME' => $user->first_name,
             'LNAME' => $user->last_name
         ) );
@@ -378,11 +378,12 @@ function uetm_export_to_mwz( $api_url, $public_key, $private_key, $list_uid, $ro
         }
     }
 
-    $message  = '<p>Total users: %d</p>';
-    $message .= '<p>Total subscribed users: %d</p>';
-    $message .= '<p>Total errors: %d</p>';
+    $message = array();
+    $message[] = sprintf( __( 'Total users: %d', UETM_TEXTDOMAIN ), $total_users );
+    $message[] = sprintf( __( 'Total subscribed users: %d', UETM_TEXTDOMAIN ), $subscribed_with_success );
+    $message[] = sprintf( __( 'Total errors: %d', UETM_TEXTDOMAIN ), $subscribed_with_failure );
 
-    $notice_class  = ( $subscribed_with_failure > 0 ) ? ['notice-warning'] : ['notice-success'];
+    $notice_class  = ( $subscribed_with_failure > 0 ) ? 'notice-warning' : 'notice-success';
 
-    Uetm_Notice_Store::add( new Uetm_Notice( __( sprintf( $message, $total_users, $subscribed_with_success, $subscribed_with_failure ), UETM_TEXTDOMAIN ), $notice_class ) );
+    Uetm_Notice_Store::add( new Uetm_Notice( $message, $notice_class ) );
 }
