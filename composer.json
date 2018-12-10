@@ -1,0 +1,5 @@
+{
+    "require": {
+        "twisted1919/mailwizz-php-sdk": "^1.0"
+    }
+}
