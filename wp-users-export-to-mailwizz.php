@@ -1,6 +1,6 @@
 <?php defined( 'ABSPATH' ) or die( 'No direct script access allowed!' );
 /*
-Plugin Name: Users export to mailwizz
+Plugin Name: Users export to MailWizz
 Plugin URI: http://www.mailwizz.com
 Description: Adds an export users entry under Tools menu for your <a href="http://www.mailwizz.com/" target="_blank">MailWizz Email Marketing Application</a> based on the <a href="https://github.com/twisted1919/mailwizz-php-sdk" target="_blank">PHP-SDK</a>. <br />Using the widget, you can export a users list based on your mail list definition.
 Version: 1.0
@@ -115,10 +115,10 @@ add_action( 'admin_menu', 'uetm_add_pages' );
 function uetm_add_pages() {
 
     // Add a new submenu under Tools:
-    add_management_page( __( 'Export users to Mailwizz', UETM_TEXTDOMAIN ), __( 'Export users to Mailwizz',UETM_TEXTDOMAIN ), 'manage_options', 'users-to-mailwizz', 'uetm_tools_page' );
+    add_management_page( __( 'Export users to MailWizz', UETM_TEXTDOMAIN ), __( 'Export users to MailWizz',UETM_TEXTDOMAIN ), 'manage_options', 'users-to-mailwizz', 'uetm_tools_page' );
 }
 
-// uetm_tools_page() displays the page content for the Users export to Mailwizz
+// uetm_tools_page() displays the page content for the Users export to MailWizz
 function uetm_tools_page() {
 
     //must check that the user has the required capability
@@ -126,7 +126,7 @@ function uetm_tools_page() {
         wp_die( __( 'You do not have sufficient permissions to access this page.', UETM_TEXTDOMAIN ) );
     }
 
-    echo '<h2>' . __( 'Export users to Mailwizz', UETM_TEXTDOMAIN ) . '</h2>';
+    echo '<h2>' . __( 'Export users to MailWizz', UETM_TEXTDOMAIN ) . '</h2>';
 
     Uetm_Notice_Store::reset();
 
@@ -243,7 +243,7 @@ function uetm_tools_page() {
          <table class="form-table">
             <tbody>
             <tr>
-                <th scope="row"><label for="lists"><strong><?php _e('Select a Mailwizz list:', UETM_TEXTDOMAIN ); ?></strong></label></th>
+                <th scope="row"><label for="lists"><strong><?php _e('Select a MailWizz list:', UETM_TEXTDOMAIN ); ?></strong></label></th>
                 <td>
                     <select id="lists" name="lists">
                         <?php
