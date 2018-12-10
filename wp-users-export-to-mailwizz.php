@@ -135,7 +135,7 @@ function uetm_tools_page() {
 
     // Read in existing option value from database
     $option_value          = get_option( $mailwizz_api_opt_name );
-    $mailwizz_api_opt_val  = ! empty( $option_value ) ? json_decode( $option_value, true ) : '';
+    $mailwizz_api_opt_val  = ! empty( $option_value ) ? $option_value : array();
     
     $api_url               = isset( $mailwizz_api_opt_val['api_url'] )     ? $mailwizz_api_opt_val['api_url']     : '';
     $public_key            = isset( $mailwizz_api_opt_val['public_key'] )  ? $mailwizz_api_opt_val['public_key']  : '';
@@ -176,7 +176,7 @@ function uetm_tools_page() {
             Uetm_Notice_Store::add( new Uetm_Notice( $errors, ['error'] ) );
         } else {
             // If no errors save the posted value in the database
-            update_option( $mailwizz_api_opt_name, json_encode( $opt_val ) );
+            update_option( $mailwizz_api_opt_name, $opt_val );
             Uetm_Notice_Store::add( new Uetm_Notice( __( 'API credentials saved successfully.', UETM_TEXTDOMAIN ), 'notice-success' ) );
         }
         unset( $_POST['save_api'] );
@@ -192,6 +192,7 @@ function uetm_tools_page() {
         if ( $errors = uetm_validate_attributes( $nonce, $api_url, $public_key, $private_key ) ) {
             Uetm_Notice_Store::add( new Uetm_Notice( $errors, 'notice-error' ) );
         } else {
+            
             // If no error export to mailwizz list
             uetm_export_to_mwz( $api_url, $public_key, $private_key, $list_uid, $roles );
         }
